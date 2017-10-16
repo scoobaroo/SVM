@@ -2,29 +2,38 @@ package SVM;
 import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class SSMO {
 	ArrayList<ArrayList<Entry<Double, Double>> > rowList; 
-	HashMap<Entry<Integer,Integer> ,Integer> map;
-	double[] lambdas;
-	double C;
+	static HashMap<Entry<Integer,Integer> ,Integer> map;
+	static double[] lambdas;
+	static double C;
 	double epsilon;
+	double[] b;
+	double B;
 	
 	public SSMO() {
 	}
 	public SSMO(double[] lambdas, HashMap<Entry<Integer,Integer>,Integer> map, double C) { 
-		this.map = map;
-		this.lambdas = lambdas;
-		this.C = C;
+		SSMO.map = map;
+		SSMO.lambdas = lambdas;
+		SSMO.C = C;
 	}
 	
-	public void init() {
+	public ArrayList<ArrayList<Entry<Integer, Integer>>> init() {
 		rowList = new ArrayList<ArrayList<Entry<Double, Double>> >();
 		map = new LinkedHashMap<Entry<Integer,Integer>,Integer>();
 		lambdas= new double[6];
-		this.C = 2.5;
+		for(int i = 0; i < lambdas.length; i++) {
+			lambdas[i] = 0;
+		}
+		b = new double[lambdas.length];
+		SSMO.C = 2.5;
 		this.epsilon = 0.00001;
 		Entry<Integer,Integer> x1 = new AbstractMap.SimpleEntry<Integer,Integer>(3,3);
 		Entry<Integer,Integer> x2 = new AbstractMap.SimpleEntry<Integer,Integer>(3,4);
@@ -38,93 +47,6 @@ public class SSMO {
 		map.put(x4, -1);
 		map.put(x5, -1);
 		map.put(x6, -1);
-		ArrayList<Entry<Double,Double>> row1 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row2 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row3 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row4 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row5 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row6 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row7 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row8 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row9 = new ArrayList<Entry<Double,Double>>();
-		ArrayList<Entry<Double,Double>> row10 = new ArrayList<Entry<Double,Double>>();
-		Entry<Double,Double> row1pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[0],lambdas[1]);
-		Entry<Double,Double> row1pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[1],lambdas[2]);
-		Entry<Double,Double> row1pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[2],lambdas[3]);
-		Entry<Double,Double> row1pair4 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[3],lambdas[4]);
-		Entry<Double,Double> row1pair5 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[4],lambdas[5]);
-		row1.add(row1pair1);
-		row1.add(row1pair2);
-		row1.add(row1pair3);
-		row1.add(row1pair4);
-		row1.add(row1pair5);
-		Entry<Double,Double> row2pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[0],lambdas[2]);
-		Entry<Double,Double> row2pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[1],lambdas[3]);
-		Entry<Double,Double> row2pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[2],lambdas[4]);
-		Entry<Double,Double> row2pair4 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[3],lambdas[5]);
-		row2.add(row2pair1);
-		row2.add(row2pair2);
-		row2.add(row2pair3);
-		row2.add(row2pair4);
-		Entry<Double,Double> row3pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[0],lambdas[3]);
-		Entry<Double,Double> row3pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[1],lambdas[4]);
-		Entry<Double,Double> row3pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[2],lambdas[5]);
-		row3.add(row3pair1);
-		row3.add(row3pair2);
-		row3.add(row3pair3);
-		Entry<Double,Double> row4pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[0],lambdas[4]);
-		Entry<Double,Double> row4pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[1],lambdas[5]);
-		row4.add(row4pair1);
-		row4.add(row4pair2);
-		Entry<Double,Double> row5pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[0],lambdas[5]);
-		row5.add(row5pair1);
-		Entry<Double,Double> row6pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[1],lambdas[0]);
-		Entry<Double,Double> row6pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[2],lambdas[1]);
-		Entry<Double,Double> row6pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[3],lambdas[2]);
-		Entry<Double,Double> row6pair4 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[4],lambdas[3]);
-		Entry<Double,Double> row6pair5 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[5],lambdas[4]);
-		row6.add(row6pair1);
-		row6.add(row6pair2);
-		row6.add(row6pair3);
-		row6.add(row6pair4);
-		row6.add(row6pair5);
-		Entry<Double,Double> row7pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[2],lambdas[0]);
-		Entry<Double,Double> row7pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[3],lambdas[1]);
-		Entry<Double,Double> row7pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[4],lambdas[2]);
-		Entry<Double,Double> row7pair4 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[5],lambdas[3]);
-		row7.add(row7pair1);
-		row7.add(row7pair2);
-		row7.add(row7pair3);
-		row7.add(row7pair4);
-		Entry<Double,Double> row8pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[3],lambdas[0]);
-		Entry<Double,Double> row8pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[4],lambdas[1]);
-		Entry<Double,Double> row8pair3 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[5],lambdas[2]);
-		row8.add(row8pair1);
-		row8.add(row8pair2);
-		row8.add(row8pair3);
-		Entry<Double,Double> row9pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[4],lambdas[0]);
-		Entry<Double,Double> row9pair2 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[5],lambdas[1]);
-		row9.add(row9pair1);
-		row9.add(row9pair2);
-		Entry<Double,Double> row10pair1 = new AbstractMap.SimpleEntry<Double,Double>(lambdas[5],lambdas[0]);
-		row10.add(row10pair1);
-		rowList.add(row1);
-		rowList.add(row2);
-		rowList.add(row3);
-		rowList.add(row4);
-		rowList.add(row5);
-		rowList.add(row6);
-		rowList.add(row7);
-		rowList.add(row8);
-		rowList.add(row9);
-		rowList.add(row10);
-		for(int i = 0; i < lambdas.length; i++) {
-			lambdas[i] = 0;
-		}
-		this.epsilon = 0;
-	}
-	
-	public SSMOReturn train() {
 		ArrayList<ArrayList<Entry<Integer,Integer>>> ijList = new ArrayList<ArrayList<Entry<Integer,Integer>>>();
 		ArrayList<Entry<Integer,Integer>> ijrow1 = new ArrayList<Entry<Integer,Integer>>();
 		ArrayList<Entry<Integer,Integer>> ijrow2 = new ArrayList<Entry<Integer,Integer>>();
@@ -206,67 +128,141 @@ public class SSMO {
 		ijList.add(ijrow8);
 		ijList.add(ijrow9);
 		ijList.add(ijrow10);
-		for(ArrayList<Entry<Integer,Integer>> list : ijList) {
-			for(Entry<Integer,Integer> entry: list) {
-				int i = entry.getKey();
-				int j = entry.getValue();
-				System.out.println(map);
-				Entry<Integer,Integer> Xi =  (Entry<Integer, Integer>) (map.keySet().toArray())[i];
-				Entry<Integer,Integer> Xj = (Entry<Integer,Integer>) (map.keySet().toArray())[j];
-				int a = Xi.getKey();
-				int b = Xi.getValue();
-				int[] ab = new int[] {a,b};
-				int c = Xj.getKey();
-				int d = Xj.getValue();
-				int[] cd = new int[] {c,d};
-				printArray(ab);
-				int D = 2 * dotProduct(ab,cd) - dotProduct(ab,ab) - dotProduct(cd,cd);
-				if( Math.abs(D) > epsilon) {
-					double Ei = f(ab) - map.get(Xi);
-					double Ej = f(cd) - map.get(Xj);
-					
-					//stopped here
+		return ijList;
+	}
+	
+	
+	public SSMOReturn train(ArrayList<ArrayList<Entry<Integer, Integer>>> ijList) {
+		B = 0.0;
+		System.out.println("epsilon: " + epsilon);
+		double oldLambdas[] = new double[lambdas.length];
+		while(true) {
+			for(ArrayList<Entry<Integer,Integer>> list : ijList) {
+				for(Entry<Integer,Integer> entry: list) {
+					System.out.println("WE ARE TRAINING");
+					int i = entry.getKey();
+					int j = entry.getValue();
+					Entry<Integer,Integer> Xi =  (Entry<Integer, Integer>) (map.keySet().toArray())[i];
+					Entry<Integer,Integer> Xj = (Entry<Integer,Integer>) (map.keySet().toArray())[j];
+					int D = 2 * dotProduct(Xi,Xj) - dotProduct(Xi,Xi) - dotProduct(Xj,Xj);
+					System.out.println("D: " + D);
+					if( Math.abs(D) > epsilon) {
+						double zi = map.get(Xi).doubleValue(); 
+						double zj = map.get(Xj).doubleValue(); 
+						double Ei = f(Xi) - zi;
+						double Ej = f(Xj) - zj;
+						oldLambdas[i] = lambdas[i];
+						oldLambdas[j] = lambdas[j];
+						// zi is map.get(Xi)
+						lambdas[j] = lambdas[j] - zj * (Ei - Ej) / D;
+						double h;
+						double l;
+						if( map.get(Xi) == map.get(Xj) ) {
+							ArrayList<Double> listL = new ArrayList<>();
+							listL.add(0.0);
+							double elementL = lambdas[i] + lambdas[j] - C;
+							listL.add(elementL);
+							l = Collections.max(listL);
+							ArrayList<Double> listH = new ArrayList<>();
+							listH.add(C);
+							double elementH = lambdas[i] + lambdas[j];
+							listH.add(elementH);
+							h = Collections.min(listH);
+						} else {
+							ArrayList<Double> listL2 = new ArrayList<>();
+							listL2.add(0.0);
+							double elementL2 = lambdas[j] - lambdas[i];
+							listL2.add(elementL2);
+							l = Collections.max(listL2);
+							ArrayList<Double> listH2 = new ArrayList<>();
+							listH2.add(C);
+							double elementH2 = C + lambdas[j] - lambdas[i];
+							listH2.add(elementH2);
+							h = Collections.min(listH2);
+						}
+						if(lambdas[j] > h) {
+							lambdas[j] = h;
+						} else if(lambdas[j] >= l && lambdas[j]<= h) {
+							lambdas[j] = lambdas[j];
+						} else {
+							lambdas[j] = l;
+						}
+						lambdas[i] += zi*zj*(oldLambdas[j] - lambdas[j]);
+						b[i] = B - Ei - zi * (lambdas[i] - oldLambdas[i]) * dotProduct(Xi,Xi) - zj * (lambdas[j] - oldLambdas[j]) * dotProduct(Xi, Xj);
+						b[j] = B - Ej - zi * (lambdas[i] - oldLambdas[i]) * dotProduct(Xi,Xj) - zj * (lambdas[j] - oldLambdas[j]) * dotProduct(Xj, Xj);
+						System.out.println("B values calculated ..... ");
+						printArrayDouble(b);
+						if(lambdas[i]<C && lambdas[i]>0) {
+							B = b[i];
+						} else if (lambdas[j]<C && lambdas[j]>0) {
+							B = b[j];
+						} else {
+							B = ( b[i] + b[j] ) / 2;
+						}
+						System.out.println("lambdas after this round");
+						printArrayDouble(lambdas);
+					}
 				}
 			}
+			boolean match = Arrays.equals(lambdas, oldLambdas);
+			if(match) {
+				break;
+			}
 		}
-			System.out.println(ijList);
-
-
-		SSMOReturn ssmoreturn = new SSMOReturn();
-		return ssmoreturn;
+		SSMOReturn sr = new SSMOReturn(lambdas, B);
+		return sr;
 	}
-	public static void main(String[] args) {
-		System.out.println("In Main");
-		SSMO ssmo = new SSMO();
-		ssmo.init();
-		ssmo.train();
-	}
-	public static void printArray(int[] array) {
-	    for (int i : array) {
-	        System.out.print(i + " ");
-	    }
-		System.out.println();
-	}
-	public double f(int[] vector) {
+	
+	public double f(Entry<Integer,Integer> Xvector) {
 		double sum = 0;
 		for(int i=0; i< lambdas.length; i++) {
 			Entry<Integer,Integer> Xi = (Entry<Integer,Integer>) (map.keySet().toArray())[i];
-			int a = Xi.getKey();
-			int b = Xi.getValue();
-			int[] arr = new int[] {a,b} ;
-			double element = lambdas[i] * z[i] * dotProduct(vector, arr) + b
+			System.out.println("Input to f(X): " +Xi);
+			double zi = map.get(Xi);
+			System.out.println("Z values in f(X): " + zi);
+			System.out.println("B value: " + B);
+			double element = lambdas[i] * zi * dotProduct(Xi, Xvector) + B;
+			System.out.println("element value we are adding to sum in f(X): " + element);
 			sum+=element;
 		}
+		System.out.println("f(X) value: "  + sum);
 		return sum;
 	}
-	public int dotProduct(int[] array1, int[] array2) {
-	     int n = array1.length;
-	     int sum = 0;
-	     for (int i = 0; i < n; i++) 
-	     {
-	        sum += array1[i] * array2[i];    
-	     }
-	     System.out.println(sum);
-	     return sum;
+	public static void main(String[] args) {
+		System.out.println("In Main");
+		SSMO ssmo = new SSMO(lambdas,map,C);
+		ArrayList<ArrayList<Entry<Integer, Integer>> > ijList = ssmo.init();
+		SSMOReturn values = ssmo.train(ijList);
+		System.out.println("b value: " + values.b);
+		System.out.println("Lambda Values: ");
+		printArrayDouble(values.lambdas);
+		System.out.println(ijList);
+	}
+	public static void printArray(int[] array) {
+	    for (int i : array) {
+	        System.out.print(i + ",");
+	    }
+		System.out.println();
+	}
+	public static void printArrayDouble(double[] array) {
+		System.out.print("[ ");
+	    for (double d : array) {
+	        System.out.print(d + ",");
+	    }
+	    System.out.print("]");
+		System.out.println();
+	}
+	public int dotProduct( Entry<Integer,Integer> entry1, Entry<Integer,Integer> entry2) {
+		 int a = entry1.getKey();
+		 int b = entry1.getValue();
+		 int[] ab = new int[] {a,b};
+		 int c = entry2.getKey();
+		 int d = entry2.getValue();
+		 int[] cd = new int[] {c,d};
+		 int sum = 0;
+		 for (int i = 0; i < ab.length; i++) {
+		    sum += ab[i] * cd[i];    
+		 }
+		 return sum;
 	}
 }
