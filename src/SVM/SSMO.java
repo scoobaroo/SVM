@@ -1,12 +1,13 @@
 package SVM;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import org.jfree.ui.RefineryUtilities;
 
 public class SSMO {
 	ArrayList<ArrayList<Entry<Double, Double>> > rowList; 
@@ -16,9 +17,7 @@ public class SSMO {
 	double epsilon;
 	double[] b;
 	double B;
-	
-	public SSMO() {
-	}
+
 	public SSMO(double[] lambdas, HashMap<Entry<Integer,Integer>,Integer> map, double C) { 
 		SSMO.map = map;
 		SSMO.lambdas = lambdas;
@@ -26,7 +25,6 @@ public class SSMO {
 	}
 	
 	public ArrayList<ArrayList<Entry<Integer, Integer>>> init() {
-		rowList = new ArrayList<ArrayList<Entry<Double, Double>> >();
 		map = new LinkedHashMap<Entry<Integer,Integer>,Integer>();
 		lambdas= new double[6];
 		for(int i = 0; i < lambdas.length; i++) {
@@ -131,6 +129,139 @@ public class SSMO {
 		return ijList;
 	}
 	
+	public ArrayList<Entry<Integer, Integer>> init2() {
+		map = new LinkedHashMap<Entry<Integer,Integer>,Integer>();
+		lambdas= new double[6];
+		for(int i = 0; i < lambdas.length; i++) {
+			lambdas[i] = 0;
+		}
+		b = new double[lambdas.length];
+		SSMO.C = 2.5;
+		this.epsilon = 0.00001;
+		Entry<Integer,Integer> x1 = new AbstractMap.SimpleEntry<Integer,Integer>(3,3);
+		Entry<Integer,Integer> x2 = new AbstractMap.SimpleEntry<Integer,Integer>(3,4);
+		Entry<Integer,Integer> x3 = new AbstractMap.SimpleEntry<Integer,Integer>(2,3);
+		Entry<Integer,Integer> x4 = new AbstractMap.SimpleEntry<Integer,Integer>(1,1);
+		Entry<Integer,Integer> x5 = new AbstractMap.SimpleEntry<Integer,Integer>(1,3);
+		Entry<Integer,Integer> x6 = new AbstractMap.SimpleEntry<Integer,Integer>(2,2);
+		map.put(x1, 1);
+		map.put(x2, 1);
+		map.put(x3, 1);
+		map.put(x4, -1);
+		map.put(x5, -1);
+		map.put(x6, -1);
+		ArrayList<Entry<Integer,Integer>> ijList2 = new ArrayList<>();
+		ArrayList<Integer> shuffleList = new ArrayList<>();
+		while(ijList2.size() < 1000) {
+			for(int i = 0 ; i < lambdas.length ; i++) {
+				shuffleList.clear();
+				for(int j = 0 ; j < lambdas.length ; j++) {
+					shuffleList.add(j);
+				}
+				System.out.println("New Shuffle List: " + shuffleList);
+				Random rand = new Random();
+				if(shuffleList.size() == 6) {
+					shuffleList.remove(i);
+					Collections.shuffle(shuffleList, rand);
+					System.out.println("After shuffle:" + shuffleList);
+					Entry<Integer,Integer> entry = new AbstractMap.SimpleEntry<Integer, Integer>(i,shuffleList.get(0));
+					ijList2.add(entry);
+					System.out.println(entry);
+				}
+			}
+		}
+		ijList2.remove(1001);
+		ijList2.remove(1000);
+		System.out.println(ijList2.size());
+		return ijList2;
+	}
+	
+
+	public SSMOReturn train2(ArrayList<Entry<Integer,Integer>> ijList2) {
+		B = 0.0;
+		System.out.println("epsilon: " + epsilon);
+		double[] oldLambdas2 = new double[lambdas.length];
+		double[] oldLambdas = new double[lambdas.length];
+		while(true) {
+			for(Entry<Integer,Integer> entry : ijList2) {
+				System.out.println("------------------WE ARE TRAINING IN TRAIN2------------");
+				int i = entry.getKey();
+				int j = entry.getValue();
+				Entry<Integer,Integer> Xi =  (Entry<Integer, Integer>) (map.keySet().toArray())[i];
+				Entry<Integer,Integer> Xj = (Entry<Integer,Integer>) (map.keySet().toArray())[j];
+				int D = 2 * dotProduct(Xi,Xj) - dotProduct(Xi,Xi) - dotProduct(Xj,Xj);
+				System.out.println("D: " + D);
+				if( Math.abs(D) > epsilon) {
+					// zi is map.get(Xi)
+					// zj is map.get(Xj)
+					double zi = map.get(Xi).doubleValue(); 
+					double zj = map.get(Xj).doubleValue(); 
+					double Ei = f(Xi) - zi;
+					double Ej = f(Xj) - zj;
+					oldLambdas[i] = lambdas[i];
+					oldLambdas[j] = lambdas[j];
+					lambdas[j] = lambdas[j] - zj * (Ei - Ej) / D;
+					double h;
+					double l;
+					if( map.get(Xi) == map.get(Xj) ) {
+						ArrayList<Double> listL = new ArrayList<>();
+						listL.add(0.0);
+						double elementL = lambdas[i] + lambdas[j] - C;
+						listL.add(elementL);
+						l = Collections.max(listL);
+						ArrayList<Double> listH = new ArrayList<>();
+						listH.add(C);
+						double elementH = lambdas[i] + lambdas[j];
+						listH.add(elementH);
+						h = Collections.min(listH);
+					} else {
+						ArrayList<Double> listL2 = new ArrayList<>();
+						listL2.add(0.0);
+						double elementL2 = lambdas[j] - lambdas[i];
+						listL2.add(elementL2);
+						l = Collections.max(listL2);
+						ArrayList<Double> listH2 = new ArrayList<>();
+						listH2.add(C);
+						double elementH2 = C + lambdas[j] - lambdas[i];
+						listH2.add(elementH2);
+						h = Collections.min(listH2);
+					}
+					if(lambdas[j] > h) {
+						lambdas[j] = h;
+					} else if(lambdas[j] >= l && lambdas[j]<= h) {
+						lambdas[j] = lambdas[j];
+					} else {
+						lambdas[j] = l;
+					}
+					lambdas[i] += zi*zj*(oldLambdas[j] - lambdas[j]);
+					b[i] = B - Ei - zi * (lambdas[i] - oldLambdas[i]) * dotProduct(Xi,Xi) - zj * (lambdas[j] - oldLambdas[j]) * dotProduct(Xi, Xj);
+					b[j] = B - Ej - zi * (lambdas[i] - oldLambdas[i]) * dotProduct(Xi,Xj) - zj * (lambdas[j] - oldLambdas[j]) * dotProduct(Xj, Xj);
+					System.out.println("b values calculated ..... ");
+					printArrayDouble(b);
+					if(lambdas[i]<C && lambdas[i]>0) {
+						B = b[i];
+					} else if (lambdas[j]<C && lambdas[j]>0) {
+						B = b[j];
+					} else {
+						B = ( b[i] + b[j] ) / 2;
+					}
+					System.out.println("B value at the end of this round : " + B);
+					System.out.println("lambdas after this round");
+					printArrayDouble(lambdas);
+					System.out.println("oldLambdas after this round");
+					printArrayDouble(oldLambdas);
+				}
+				boolean match = Arrays.equals(lambdas, oldLambdas);
+				System.out.println("match value: "  +match);
+				if(match) {
+					break;
+				}
+			}
+			SSMOReturn sr = new SSMOReturn(lambdas, B);
+			return sr;
+		}
+	}
+	
 	
 	public SSMOReturn train(ArrayList<ArrayList<Entry<Integer, Integer>>> ijList) {
 		B = 0.0;
@@ -154,6 +285,7 @@ public class SSMO {
 						oldLambdas[i] = lambdas[i];
 						oldLambdas[j] = lambdas[j];
 						// zi is map.get(Xi)
+						// zj is map.get(Xj)
 						lambdas[j] = lambdas[j] - zj * (Ei - Ej) / D;
 						double h;
 						double l;
@@ -201,6 +333,8 @@ public class SSMO {
 						}
 						System.out.println("lambdas after this round");
 						printArrayDouble(lambdas);
+						System.out.println("oldLambdas after this round");
+						printArrayDouble(oldLambdas);
 					}
 				}
 			}
@@ -217,17 +351,18 @@ public class SSMO {
 		double sum = 0;
 		for(int i=0; i< lambdas.length; i++) {
 			Entry<Integer,Integer> Xi = (Entry<Integer,Integer>) (map.keySet().toArray())[i];
-			System.out.println("Input to f(X): " +Xi);
+//			System.out.println("Input to f(X): " +Xi);
 			double zi = map.get(Xi);
-			System.out.println("Z values in f(X): " + zi);
-			System.out.println("B value: " + B);
+//			System.out.println("Z values in f(X): " + zi);
+//			System.out.println("B value: " + B);
 			double element = lambdas[i] * zi * dotProduct(Xi, Xvector) + B;
-			System.out.println("element value we are adding to sum in f(X): " + element);
+//			System.out.println("element value we are adding to sum in f(X): " + element);
 			sum+=element;
 		}
 		System.out.println("f(X) value: "  + sum);
 		return sum;
 	}
+		
 	public static void main(String[] args) {
 		System.out.println("In Main");
 		SSMO ssmo = new SSMO(lambdas,map,C);
@@ -236,8 +371,19 @@ public class SSMO {
 		System.out.println("b value: " + values.b);
 		System.out.println("Lambda Values: ");
 		printArrayDouble(values.lambdas);
+		System.out.println("ijList: ");
 		System.out.println(ijList);
+		ArrayList<Entry<Integer,Integer>> ijList2 = ssmo.init2();
+		SSMOReturn values2 = ssmo.train2(ijList2);
+		System.out.println("b values for random selection of lambdas: " + values2.b);
+		System.out.println("Lambda Values for random selection of lambdas:");
+		printArrayDouble(values2.lambdas);
+	    GraphFrame g = new GraphFrame("Graph");
+	    g.pack();
+	    RefineryUtilities.centerFrameOnScreen(g);
+	    g.setVisible(true);
 	}
+	
 	public static void printArray(int[] array) {
 	    for (int i : array) {
 	        System.out.print(i + ",");
