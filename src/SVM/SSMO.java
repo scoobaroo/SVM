@@ -355,12 +355,12 @@ public class SSMO {
 			double zi = map.get(Xi);
 //			System.out.println("Z values in f(X): " + zi);
 //			System.out.println("B value: " + B);
-			double element = lambdas[i] * zi * dotProduct(Xi, Xvector) + B;
+			double element = lambdas[i] * zi * dotProduct(Xi, Xvector);
 //			System.out.println("element value we are adding to sum in f(X): " + element);
 			sum+=element;
 		}
 		System.out.println("f(X) value: "  + sum);
-		return sum;
+		return sum + B;
 	}
 		
 	public static void main(String[] args) {
@@ -368,14 +368,14 @@ public class SSMO {
 		SSMO ssmo = new SSMO(lambdas,map,C);
 		ArrayList<ArrayList<Entry<Integer, Integer>> > ijList = ssmo.init();
 		SSMOReturn values = ssmo.train(ijList);
-		System.out.println("b value: " + values.b);
-		System.out.println("Lambda Values: ");
-		printArrayDouble(values.lambdas);
-		System.out.println("ijList: ");
-		System.out.println(ijList);
+
 		ArrayList<Entry<Integer,Integer>> ijList2 = ssmo.init2();
 		SSMOReturn values2 = ssmo.train2(ijList2);
-		System.out.println("b values for random selection of lambdas: " + values2.b);
+		System.out.println("b value for book's prescriptions: " + values.b);
+		System.out.println("Lambda Values for book's prescriptions: ");
+		printArrayDouble(values.lambdas);
+		System.out.println("-----------------------------------------------------------");
+		System.out.println("b value for random selection of lambdas: " + values2.b);
 		System.out.println("Lambda Values for random selection of lambdas:");
 		printArrayDouble(values2.lambdas);
 	    GraphFrame g = new GraphFrame("Graph");
